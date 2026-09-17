@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CAPTION - ASL Translation</title>
+
+   
+
+    <link rel="manifest" href="manifest.json">
+
+    <meta id="theme-meta" name="theme-color" content="#1B4F97">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+
+        /* --- Menu & Overlay Styles --- */
+
+        .menu-icon-btn {
+
+            position: absolute; top: 20px; left: 20px;
+
+            background: none; border: none; font-size: 28px;
+
+            color: white; cursor: pointer; z-index: 1000;
+
+        }
+
+        /* Make icon visible on white background after splash */
+
+        [data-theme="light"] .menu-icon-btn { color: #1B4F97; }
+
+
+
+        .side-menu {
+
+            position: fixed; top: 0; left: -280px;
+
+            width: 280px; height: 100%;
+
+            background: var(--bg-panel);
+
+            box-shadow: 2px 0 15px rgba(0,0,0,0.2);
+
+            z-index: 10001; transition: 0.3s ease; padding: 20px;
+
+        }
+
+        .side-menu.active { left: 0; }
+
+
+
+        .menu-overlay {
+
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+
+            background: rgba(0,0,0,0.5); display: none; z-index: 10000;
+
+        }
+
+
+
+        .menu-header {
+
+            display: flex; justify-content: space-between; align-items: center;
+
+            margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;
+
+        }
+
+
+
+        .menu-items { list-style: none; padding: 0; }
+
+        .menu-items li { margin-bottom: 15px; }
+
+        .menu-btn {
+
+            width: 100%; text-align: left; background: var(--bg-inner);
+
+            color: var(--text-main); padding: 12px; border: 1px solid var(--border-color);
+
+            border-radius: 8px; cursor: pointer; font-weight: bold;
+
+        }
+
+
+
+        /* Splash Screen Styling */
+
+        #splash-screen {
+
+            position: fixed;
+
+            top: 0; left: 0; width: 100%; height: 100%;
+
+            background: #1B4F97;
+
+            display: flex; flex-direction: column;
+
+            align-items: center; justify-content: center;
+
+            z-index: 9999;
+
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+
+        }
+
+        #splash-screen.fade-out { opacity: 0; visibility: hidden; }
+
+
+
+        #startAppBtn {
+
+            background: white; color: #1B4F97; padding: 15px 40px;
+
+            border-radius: 30px; font-weight: bold; font-size: 18px;
+
+            border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+
+            transition: transform 0.2s ease; margin-top: 20px;
+
+        }
+
+
+
+        #downloadAppBtn {
+
+            background: rgba(255, 255, 255, 0.15); color: white;
+
+            padding: 12px 30px; border-radius: 30px; font-weight: bold;
+
+            font-size: 14px; border: 1.5px solid rgba(255, 255, 255, 0.4);
+
+            cursor: pointer; margin-top: 15px; backdrop-filter: blur(10px);
+
+            -webkit-backdrop-filter: blur(10px); display: none;
+
+        }
+
+
+
+        #remoteLoading {
+
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+
+            text-align: center; z-index: 10; background: rgba(27, 79, 151, 0.9);
+
+            padding: 20px; border-radius: 15px; display: none;
+
+        }
+
+
+
+        .split-row { display: flex; gap: 15px; width: 100%; margin-bottom: 15px; }
+
+        @media (max-width: 768px) { .split-row { flex-direction: column; } }
+
+    </style>
+
+</head>
+
+<body>
+
+
+
+    <button id="openMenu" class="menu-icon-btn">☰</button>
+
+
+
+    <div id="menu-overlay" class="menu-overlay"></div>
+
+    <div id="side-menu" class="side-menu">
+
+    <div class="menu-header">
+
+        <h3 style="color: var(--brand-blue);">Menu</h3>
+
+        <button id="closeMenu" style="background:none; border:none; font-size:24px; color:var(--text-main); cursor:pointer;">&times;</button>
+
+    </div>
+
+    <ul class="menu-items">
+
+        <li><button id="themeToggle" class="menu-btn">🌙 Dark Mode</button></li>
+
+        <li><button id="viewHistoryMenu" class="menu-btn">📜 View History</button></li>
+
+        <li><button id="showAbout" class="menu-btn">ℹ️ About Caption</button></li>
+
+        <li><button id="showHelp" class="menu-btn">❓ Help & How-to</button></li>
+
+        <li><button id="contactSupport" class="menu-btn">📧 Contact Support</button></li>
+
+    </ul>
+
+</div>
+
+
+
+<div id="helpOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-main); z-index:20001; display:none; flex-direction:column; padding:40px; overflow-y:auto;">
+
+    <h2 style="color: var(--brand-blue); margin-bottom:20px;">❓ How to use CAPTION</h2>
+
+    <div style="background:var(--bg-panel); padding:20px; border-radius:15px; border:1px solid var(--border-color); color:var(--text-main);">
+
+        <p><strong>1. Starting a Call:</strong> Share your ID with a friend. They can enter it in the "Join" box to connect.</p>
+
+        <p style="margin-top:10px;"><strong>2. Sign Language:</strong> Toggle "Sign: ON" and ensure your hands are visible in the camera for real-time translation.</p>
+
+        <p style="margin-top:10px;"><strong>3. Voice-to-Text:</strong> Enable "Voice: ON" to see live captions of what is being spoken.</p>
+
+        <p style="margin-top:10px;"><strong>4. Installation:</strong> Use the "Download App" button on the splash screen to add CAPTION to your home screen for offline use.</p>
+
+    </div>
+
+    <button id="closeHelp" style="margin-top:30px; background:var(--brand-blue); color:white; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">GOT IT</button>
+
+</div>
+
+
+
+    <div id="splash-screen">
+
+        <img src="icon-192.png" alt="CAPTION" style="width: 120px; height: 120px; border-radius: 30px; margin-bottom: 20px;">
+
+        <h1 style="color: white; letter-spacing: 5px;">CAPTION</h1>
+
+        <p style="color: rgba(255,255,255,0.8); font-size: 14px;">Real-time ASL Translation</p>
+
+        <button id="startAppBtn">GET STARTED</button>
+
+        <button id="downloadAppBtn">DOWNLOAD APP</button>
+
+    </div>
+
+   
+
+    <div class="header-container" style="text-align: center; padding: 20px 0;">
+
+        <img src="icon-512.png" alt="CAPTION Logo" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover;">
+
+        <h1>CAPTION</h1>
+
+        <div id="status-container" style="margin-top: 10px;">
+
+            <span id="status" style="font-weight: bold;">System Ready</span>
+
+            <div style="margin-top: 10px;">
+
+                <button id="copyIdBtn" style="display:none; padding:5px 12px; font-size:12px;">📋 Copy My ID</button>
+
+                <button id="shareLinkBtn" style="display:none; padding:5px 12px; font-size:12px; background:#27ae60; color:white;">🔗 Share Link</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="video-container">
+
+        <div class="video-wrapper" style="position:relative;">
+
+            <video id="localVideo" autoplay muted playsinline></video>
+
+            <canvas id="overlayCanvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+
+           
+
+            <div class="video-controls-overlay">
+
+                <button id="toggleFlash" class="video-overlay-btn" title="Toggle Flash" style="display:none;">🔦</button>
+
+                <button id="switchCam" class="video-overlay-btn" title="Switch Camera">🔄</button>
+
+                <button id="toggleMic" class="video-overlay-btn" title="Mute Call">🎙️</button>
+
+                <button id="toggleCam" class="video-overlay-btn" title="Stop Camera">📷</button>
+
+            </div>
+
+            <span class="label">You</span>
+
+        </div>
+
+        <div class="video-wrapper" style="position:relative;">
+
+            <div id="remoteLoading">
+
+                <div class="spinner"></div>
+
+                <p style="color: white; font-size: 14px; margin-top: 10px; font-weight: bold;">Connecting Video...</p>
+
+            </div>
+
+            <video id="remoteVideo" autoplay playsinline></video>
+
+            <span class="label">Remote</span>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="captions" style="max-width: 900px; margin: 0 auto; padding: 0 15px;">
+
+        <div class="split-row">
+
+            <div class="caption-section" style="flex: 1;">
+
+                <span class="caption-label">🗣️ YOUR SPEECH</span>
+
+                <p id="speechCaption">Waiting for audio...</p>
+
+            </div>
+
+            <div class="caption-section" style="flex: 1;">
+
+                <span class="caption-label">🗣️ REMOTE SPEECH</span>
+
+                <p id="remoteSpeechCaption">Waiting for remote...</p>
+
+            </div>
+
+        </div>
+
+       
+
+        <div class="split-row">
+
+            <div class="caption-section" style="flex: 1;">
+
+                <span class="caption-label">🤟 YOUR SIGNS</span>
+
+                <p id="signCaption" style="font-size: 1.5em; font-weight: bold;">---</p>
+
+            </div>
+
+            <div class="caption-section" style="flex: 1;">
+
+                <span class="caption-label">🤟 REMOTE SIGNS</span>
+
+                <p id="remoteSignCaption" style="font-size: 1.5em; font-weight: bold;">---</p>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="caption-section">
+
+            <span class="caption-label">💬 LIVE CHAT</span>
+
+            <div id="chatLog" style="height:100px; overflow-y:auto; margin-bottom:10px; border:1px solid var(--border-color); padding:5px;"></div>
+
+            <div style="display: flex; gap: 8px;">
+
+                <input type="text" id="chatInput" placeholder="Type a message..." style="flex: 1;">
+
+                <button id="sendChat" style="background: #1B4F97; color: white; padding: 0 25px;">Send</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="controls" style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; padding:20px;">
+
+        <input type="text" id="roomId" placeholder="Enter ID to Join">
+
+        <button id="joinCall">📞 Join Call</button>
+
+        <button id="endCall" disabled>End Call</button>
+
+        <button id="toggleVoice">Voice: OFF</button>
+
+        <button id="toggleSign">Sign: OFF</button>
+
+        <button id="toggleSignToSpeech" style="background: #9C27B0; color: white;">🔊 Sign-to-Speech: OFF</button>
+
+        <button id="recordSession">🔴 Record</button>
+
+        <button id="calibrateBtn" style="background:#F44336; color:white;">🎯 Calibrate (Sign 'A')</button>
+
+       
+
+        <div class="voice-picker" style="background: var(--bg-inner); padding: 5px 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; min-width: 200px;">
+
+            <label style="font-size: 12px; font-weight: bold;">VOICE:</label>
+
+            <select id="voiceSelect" style="border: none; background: transparent; font-size: 12px; color: var(--text-main); flex-grow: 1;"></select>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="historyOverlay">
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding:20px;">
+
+            <h2 style="color: white; margin: 0;">📜 Session History</h2>
+
+            <button id="closeHistory" style="background: white; color: #1B4F97; padding: 10px 20px; border:none; border-radius:5px;">Close</button>
+
+        </div>
+
+        <div id="historyContent" style="padding:0 20px;"></div>
+
+    </div>
+
+
+
+    <div id="aboutOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-main); z-index:20000; display:none; flex-direction:column; padding:40px; overflow-y:auto;">
+
+        <h2 style="color: var(--brand-blue); margin-bottom:20px;">ℹ️ About CAPTION</h2>
+
+        <div style="background:var(--bg-panel); padding:20px; border-radius:15px; border:1px solid var(--border-color); color:var(--text-main);">
+
+            <p><strong>CAPTION</strong> is a real-time communication tool designed to bridge the gap between ASL users and non-signers.</p>
+
+            <p style="margin-top:10px;">Using advanced AI (TensorFlow.js) and Peer-to-Peer technology, we provide instant sign-to-text and speech-to-text translation directly in your browser.</p>
+
+            <h4 style="margin-top:20px;">Key Features:</h4>
+
+            <ul>
+
+                <li>ASL Gesture Recognition</li>
+
+                <li>Bi-directional Speech Captioning</li>
+
+                <li>Encrypted Video Calling</li>
+
+                <li>Downloadable Mobile Experience</li>
+
+            </ul>
+
+        </div>
+
+        <button id="closeAbout" style="margin-top:30px; background:var(--brand-blue); color:white; padding:15px; border:none; border-radius:10px; font-weight:bold;">CLOSE</button>
+
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@4.15.0"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.15.0"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@4.15.0"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/hand-pose-detection"></script>
+
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,465 @@
+/* * CAPTION - Adaptive Branded Stylesheet
+ * Supports System-level and Manual Dark/Light Mode
+ */
+
+:root {
+    /* --- Light Mode (Default) --- */
+    --bg-main: #f4f7fb;
+    --bg-panel: #ffffff;
+    --bg-inner: #f8fafd;
+    --text-main: #2c3e50;
+    --text-contrast: #ffffff;
+    --border-color: #e1e8ed;
+    --brand-blue: #1B4F97;
+    --shadow: rgba(27, 79, 151, 0.15);
+    --btn-secondary: #edf2f7;
+    --btn-secondary-text: #1B4F97;
+}
+
+[data-theme="dark"] {
+    /* --- Dark Mode Overrides --- */
+    --bg-main: #0f172a;
+    --bg-panel: #1e293b;
+    --bg-inner: #334155;
+    --text-main: #f1f5f9;
+    --text-contrast: #ffffff;
+    --border-color: #334155;
+    --brand-blue: #38bdf8;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --btn-secondary: #334155;
+    --btn-secondary-text: #38bdf8;
+}
+
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* --- Splash Screen --- */
+#splash-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #1B4F97;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+#splash-screen.fade-out { opacity: 0; visibility: hidden; }
+
+#startAppBtn {
+    background: white;
+    color: #1B4F97;
+    padding: 15px 40px;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease;
+}
+
+#startAppBtn:hover { transform: scale(1.05); background: #f0f4f8; }
+#startAppBtn:active { transform: scale(0.98); }
+
+/* Header Branding */
+.header-container {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--brand-blue);
+    letter-spacing: 3px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+/* Video Container */
+#video-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.video-wrapper {
+    position: relative;
+    width: 45%;
+    min-width: 300px;
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px var(--shadow);
+    border: 4px solid var(--brand-blue);
+}
+
+/* CHANGED: Simplified video styling for better alignment with canvas */
+video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transform: scaleX(-1); 
+}
+
+#remoteVideo {
+    transform: scaleX(1);
+}
+
+.no-mirror {
+    transform: scaleX(1) !important;
+}
+
+/* CHANGED: Canvas now perfectly matches the video wrapper dimensions */
+#overlayCanvas {
+    position: absolute;
+    top: 0; 
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 21; /* Slightly higher than video */
+    pointer-events: none; 
+    transform: scaleX(-1); /* Sync mirroring with local video */
+}
+
+/* Floating Controls Container */
+.video-controls-overlay {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 50;
+}
+
+/* Floating Overlay Buttons */
+.video-overlay-btn {
+    background: rgba(0, 0, 0, 0.4);
+    color: white;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    padding: 0;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.video-overlay-btn:hover {
+    background: var(--brand-blue);
+    transform: scale(1.1);
+}
+
+/* Active/Off States */
+.video-overlay-btn.active {
+    background: #f1c40f; 
+    color: #000;
+    border-color: #f1c40f;
+    box-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
+}
+
+.video-overlay-btn.off {
+    background: rgba(231, 76, 60, 0.8); /* Red for Mute/Stop Cam */
+    border-color: #e74c3c;
+    color: white;
+}
+
+.video-overlay-btn:active {
+    transform: scale(0.9);
+}
+
+/* Loading & Labels */
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    width: 40px; height: 40px; border-radius: 50%;
+    border-left-color: #ffffff;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+#remoteLoading {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 25;
+    background: rgba(27, 79, 151, 0.9);
+    padding: 20px;
+    border-radius: 12px;
+    color: white;
+}
+
+.label {
+    position: absolute;
+    bottom: 10px; left: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    z-index: 30;
+}
+
+/* Captions Area */
+#captions {
+    background: var(--bg-panel);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.split-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.caption-section {
+    background: var(--bg-inner);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.caption-label {
+    font-weight: 800;
+    font-size: 11px;
+    color: var(--brand-blue);
+    display: block;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#speechCaption, #remoteSpeechCaption { font-size: 16px; line-height: 1.4; }
+#signCaption, #remoteSignCaption { color: var(--brand-blue); font-size: 24px; font-weight: bold; }
+
+/* Chat Log */
+#chatLog {
+    height: 120px;
+    overflow-y: auto;
+    background: var(--bg-panel);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 10px;
+}
+
+/* Controls */
+#controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: var(--bg-panel);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 -5px 25px var(--shadow);
+}
+
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--btn-secondary-text);
+    background: var(--btn-secondary);
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+#joinCall { background: #1B4F97; color: white; }
+#endCall { background: #e74c3c; color: white; }
+#recordSession { background: #d32f2f; color: white; }
+
+#recordSession.recording { 
+    background: #ffffff !important; 
+    color: #d32f2f !important; 
+    border: 2px solid #d32f2f !important;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+#voiceSelect, input[type="text"] {
+    background: var(--bg-inner);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+/* History Overlay */
+#historyOverlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: var(--bg-main);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    padding: 40px;
+}
+
+#historyContent {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--bg-panel);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .video-wrapper { width: 100%; }
+    .split-row { flex-direction: column; }
+    button { flex: 1 1 40%; }
+}
+
+/* Styling for the new Download Button */
+#downloadAppBtn {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    padding: 12px 30px !important;
+    border-radius: 30px !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+    cursor: pointer !important;
+    margin-top: 15px !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    transition: all 0.2s ease !important;
+    display: none; /* Hidden on PC, shown on Mobile via JS */
+}
+
+#downloadAppBtn:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: scale(1.05) !important;
+}
+
+/* --- Menu Styles --- */
+.menu-icon-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: var(--brand-blue);
+    cursor: pointer;
+    z-index: 100;
+}
+
+.side-menu {
+    position: fixed;
+    top: 0; left: -280px; /* Hidden by default */
+    width: 280px; height: 100%;
+    background: var(--bg-panel);
+    box-shadow: 2px 0 15px rgba(0,0,0,0.2);
+    z-index: 10001;
+    transition: 0.3s ease;
+    padding: 20px;
+}
+
+.side-menu.active { left: 0; }
+
+.menu-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    z-index: 10000;
+}
+
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.menu-items { list-style: none; padding: 0; }
+.menu-items li { margin-bottom: 15px; }
+
+.menu-btn {
+    width: 100%;
+    text-align: left;
+    background: var(--bg-inner);
+    color: var(--text-main);
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+#closeMenu { background: none; font-size: 30px; color: var(--text-main); }
+
+.menu-btn {
+    transition: background 0.2s ease, transform 0.1s active;
+}
+
+.menu-btn:active {
+    transform: scale(0.98);
+}
+
+/* Ensure overlays look consistent */
+#helpOverlay, #aboutOverlay {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Connection Status Colors */
+.status-good { background-color: #2ecc71 !important; box-shadow: 0 0 8px #2ecc71; }
+.status-poor { background-color: #f1c40f !important; box-shadow: 0 0 8px #f1c40f; }
+.status-bad { background-color: #e74c3c !important; box-shadow: 0 0 8px #e74c3c; }
+
+#connection-status {
+    transition: all 0.3s ease;
+}
